@@ -64,6 +64,11 @@ func main() {
 
 			reqUrl := &url.URL{}
 
+			l.Global("Handle")
+			l.PushString(r.In.URL.Path)
+			l.PushString(r.In.URL.RawQuery)
+			l.Call(2, 0)
+
 			targetQuery := target.RawQuery
 			reqUrl.Scheme = target.Scheme
 			reqUrl.Host = target.Host
