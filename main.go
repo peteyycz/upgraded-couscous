@@ -1,12 +1,17 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+	"os"
 	"strings"
 
 	"github.com/Shopify/go-lua"
+
+	_ "github.com/joho/godotenv/autoload"
 )
 
 // "Vendored" from stdlib
@@ -45,6 +50,11 @@ func joinURLPath(a, b *url.URL) (path, rawpath string) {
 
 func main() {
 	l := lua.NewState()
+
+	port := os.Getenv("PORT")
+	if port == "" {
+		log.Fatal("No PORT environment variable provided")
+	}
 
 	lua.OpenLibraries(l)
 	if err := lua.DoFile(l, "config.lua"); err != nil {
@@ -86,5 +96,10 @@ func main() {
 		},
 	}
 
-	http.ListenAndServe(":8080", proxy)
+	done := make(chan bool)
+	go func() {
+		log.Fatal(http.ListenAndServe(fmt.Sprint(":", port), proxy))
+	}()
+	log.Printf("App is listening on http://localhost:%s/\n", port)
+	<-done
 }
